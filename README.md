@@ -1,0 +1,1 @@
+# GW_Doogle_vendor
