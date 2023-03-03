@@ -1803,7 +1803,12 @@ int gatt_adv_prepare_handler(rf_packet_adv_t * p, int rand_flag)
 
 #if(BEACON_ENABLE)
     if(0 == ret){   // priority is lowest
+	
         ret = pre_set_beacon_to_adv(p);
+		if(ret == 1)
+		{
+			LOG_USER_MSG_INFO(0, 0, "BEACON Send success!", 0);
+		}
     }
 #endif
 
@@ -2077,8 +2082,9 @@ void ble_mac_init()
 			tbl_mac[4] = 0x19;
 			tbl_mac[5] = 0xC4;
 		#endif
-
+        LOG_USER_MSG_INFO(tbl_mac, 6,"Mesh_Random_MacID:",0);
 		flash_write_page (flash_sector_mac_address, 6, tbl_mac);
+		
 	}
 }
 
@@ -2451,9 +2457,17 @@ void set_material_tx_cmd(material_tx_cmd_t *p_mat, u16 op, u8 *par, u32 par_len,
 	}
 }
 
+u8 gen_onoff_cmd = 0xFF;
+u8 last_gen_onoff_cmd = 0xFF;
 int mesh_tx_cmd(material_tx_cmd_t *p)
 {
-	if(mesh_adr_check(p->adr_src, p->adr_dst)){
+	int mesh_tx_cmd_feedback;
+	u16 cmd_op;
+	u8 *op_prama=NULL ;
+	cmd_op = p->op;
+    
+	if(mesh_adr_check(p->adr_src, p->adr_dst))
+	{
 	    LOG_MSG_ERR(TL_LOG_MESH,0, 0 ,"src or dst is invalid",0);
 		return TX_ERRNO_ADDRESS_INVALID;
 	}
@@ -2461,20 +2475,34 @@ int mesh_tx_cmd(material_tx_cmd_t *p)
 	#if RELIABLE_CMD_EN
 	int reliable = is_reliable_cmd(p->op, p->op_rsp);
 	
+
     if(reliable){	
 		if(is_unicast_adr(p->adr_dst)){
 			p->rsp_max = 1;
 		}
-		
-        return mesh_tx_cmd_reliable(p);
+		LOG_USER_MSG_INFO((u8 *)&(p->op), 2, "mesh tx reliable cmd is reliable ", 0);
+		mesh_tx_cmd_feedback = mesh_tx_cmd_reliable(p);
+        
     }else
     #endif
     {
         //if(mesh_tx_reliable.busy){
             //mesh_tx_reliable_finish();     // can send reliable and unreliable command at the same time.
         //}
-        return mesh_tx_cmd_unreliable(p);
+		LOG_USER_MSG_INFO((u8 *)&(p->op), 2, "mesh tx reliable cmd is unreliable ", 0);
+		mesh_tx_cmd_feedback = mesh_tx_cmd_unreliable(p);
     }
+    if(mesh_tx_cmd_feedback == 0 && (cmd_op == 0x0282 ) )
+	{
+        op_prama = p->par;
+		last_gen_onoff_cmd = gen_onoff_cmd;
+		gen_onoff_cmd = *op_prama;
+		LOG_USER_MSG_INFO(&gen_onoff_cmd, 1, "generic onoff cmd send: ", 0);
+	}
+
+
+
+	return mesh_tx_cmd_feedback;
 }
 
 static inline int mesh_tx_cmd2normal_2(u16 op, u8 *par, u32 par_len, u16 adr_src, u16 adr_dst, int rsp_max, bear_head_t *p_tx_head)
@@ -2485,6 +2513,7 @@ static inline int mesh_tx_cmd2normal_2(u16 op, u8 *par, u32 par_len, u16 adr_src
 
 	u8 immutable_flag = 0;
 	set_material_tx_cmd(&mat, op, par, par_len, adr_src, adr_dst, g_reliable_retry_cnt_def, rsp_max, 0, nk_array_idx, ak_array_idx, 0, immutable_flag, p_tx_head);
+	LOG_USER_MSG_INFO((u8 *)&immutable_flag, 1, "mesh_tx_cmd2normal_2", 0);
 	return mesh_tx_cmd(&mat);
 }
 
@@ -2495,7 +2524,18 @@ int mesh_tx_cmd2normal(u16 op, u8 *par, u32 par_len, u16 adr_src, u16 adr_dst, i
 
 int mesh_tx_cmd2normal_primary(u16 op, u8 *par, u32 par_len, u16 adr_dst, int rsp_max)
 {
-	return mesh_tx_cmd2normal(op, par, par_len, ele_adr_primary, adr_dst, rsp_max);
+	int Return_Value;
+	Return_Value = mesh_tx_cmd2normal(op, par, par_len, ele_adr_primary, adr_dst, rsp_max);
+	if(Return_Value == 0)
+	{
+	     LOG_USER_MSG_INFO((u8 *)&op, sizeof(op), "Tx CMD Op is:", 0);
+	}
+	else
+	{
+         LOG_USER_MSG_INFO((u8 *)&op, sizeof(op), "Op CMD is failed:", 0);
+
+	}
+	return Return_Value;
 }
 
 int mesh_tx_cmd2normal_with_tx_head(u16 op, u8 *par, u32 par_len, u16 adr_src, u16 adr_dst, int rsp_max, bear_head_t *p_tx_head)
@@ -2533,7 +2573,7 @@ int mesh_tx_cmd2uuid(u16 op, u8 *par, u32 par_len, u16 adr_src, u16 adr_dst, int
     u8 nk_array_idx = get_nk_arr_idx_first_valid();
     u8 ak_array_idx = get_ak_arr_idx_first_valid(nk_array_idx);
 	u8 immutable_flag = 1;
-
+    LOG_USER_MSG_INFO((u8 *)&immutable_flag, 1, "mesh_tx_cmd2uuid", 0);
 	set_material_tx_cmd(&mat, op, par, par_len, adr_src, adr_dst, g_reliable_retry_cnt_def, rsp_max, uuid, nk_array_idx, ak_array_idx, 0, immutable_flag, 0);
 	return mesh_tx_cmd(&mat);
 }
@@ -2731,6 +2771,12 @@ int mesh_rc_data_layer_access_cb(u8 *params, int par_len, mesh_cb_fun_par_t *cb_
 	#else
 	if(p_res->cb){ // have been check in library, check again.
         err = p_res->cb(params, par_len, cb_par);   // use mesh_tx_with_random_delay_ms in this function in library.
+		if(err == 0)
+		{
+
+
+			
+		}
     }
 	#endif
     mesh_tx_with_random_delay_ms = 0; // must be clear here 

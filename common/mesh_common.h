@@ -262,7 +262,8 @@ extern const u8 SERVICE_CHANGE_ATT_HANDLE_SLAVE;
 extern const u8 ONLINE_ST_ATT_HANDLE_SLAVE;
 extern u8 proc_homekit_pair;
 extern const u8 key_encode_bin[];
-
+extern u8 gen_onoff_cmd;
+extern u8 last_gen_onoff_cmd;
 enum{
 	BLE_4_0 =0,
 	BLE_4_2,

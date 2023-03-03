@@ -98,7 +98,7 @@ extern "C" {
 #define FAST_PROVISION_ENABLE		 0
 #endif
 
-#define BEACON_ENABLE			0
+#define BEACON_ENABLE			1
 //ms, should be multiple of 10
 #define BEACON_INTERVAL			100
 

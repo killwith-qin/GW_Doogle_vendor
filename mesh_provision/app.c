@@ -92,7 +92,7 @@ int soft_timer_test0(void)
 #endif
 
 
-
+/*Qin Wei function*/
 #define LED_SIGAL_SEND_PIN  (GPIO_PB5)  //register GPIO output
 #define SIGNAL_IO_REG_ADDR  (0x58B)    //register GPIO output
 
@@ -172,7 +172,7 @@ _attribute_ram_code_ static void Send_One_Ctr_Signal(u32 One_Signal)   //0x00 XX
 	 
 }
 
-
+/*ToDo: the function need to be test*/
 _attribute_ram_code_ static void Send_Multiple_Ctr_Signal(u32 *Ctr_Signal, U32 len)    
 {
 	int i,j;
@@ -212,18 +212,7 @@ _attribute_ram_code_ static void Send_Multiple_Ctr_Signal(u32 *Ctr_Signal, U32 l
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+const unsigned char Mesh_GW_Mac[6] = {0x20,0x19,0x11,0x22,0xFF,0x11};
 
 
 //----------------------- handle BLE event ---------------------------------------------
@@ -241,6 +230,10 @@ int app_event_handler (u32 h, u8 *p, int n)
 		if (subcode == HCI_SUB_EVT_LE_ADVERTISING_REPORT)	// ADV packet
 		{
 			event_adv_report_t *pa = (event_adv_report_t *)p;
+			if(memcmp(pa->mac,Mesh_GW_Mac,6) == 0) 
+			{
+				 LOG_USER_MSG_INFO((u8 *)pa, 20,"ADV mesaage: ",0);
+			}
 			if(LL_TYPE_ADV_NONCONN_IND != (pa->event_type & 0x0F)){
 				return 0;
 			}
@@ -891,7 +884,7 @@ u8 gateway_cmd_from_host_mesh_ota(u8 *p, u16 len )
 #endif
 
 
-
+/*Qin Wei function*/
 
 #define RUNNING_REPORT_TIME    (10000 * 1000)  //2000MS
 #define LED_YELLOW_FLASH_TIME  (500 * 1000)  //500MS
@@ -985,7 +978,7 @@ typedef struct User_Para_for_OP{
 
 #define USER_ADV_PACKET_CYCLE_TIME  (4000 * 1000)  //2000MS
 
-#define USER_SEND_COMMAND_TEST    G_ONOFF_SET//0xABCD
+#define USER_SEND_COMMAND_TEST    VD_GROUP_G_SET_NOACK//0xABCD
 void User_Test_ADV_Paekct_Send(void)
 {
 	static u32 User_Adv_Pacekt_Start_Tick = 0;
@@ -1034,13 +1027,13 @@ void User_Test_ADV_Paekct_Send(void)
 }
 
 /*
-		 ºì: #00FF00
-		³È: #7DFF00
-		»Æ: #FFFF00
-		ÂÌ: #FF0000
-		Çà: #FF00FF
-		À¶: #0000FF
-		×Ï: #00FFFF
+		RED: #00FF00
+		ORAGE: #7DFF00
+		YELLOW: #FFFF00
+		GREEN: #FF0000
+		CYAN: #FF00FF
+		BULU: #0000FF
+		PURPLE: #00FFFF
 */
 
 
@@ -1112,7 +1105,7 @@ void User_Ctr_LED_Function(void)
 				{
 					Send_One_Ctr_Signal(DROWN);
 				}
-				//Ò»´Î·¢30ÌõÖ¸Áî
+				//Ò»ï¿½Î·ï¿½30ï¿½ï¿½Ö¸ï¿½ï¿½
 			}
 
 		/*
@@ -1175,6 +1168,7 @@ void User_Ctr_LED_Function(void)
 
 void cb_My_Main_Loop_function(void)
 {
+	int gen_onoff_cmd_feedback = 1;
 	//MAC,Dirve name.etc
 	cb_User_Init_info();
 	//GPIO,COMMS;
@@ -1184,10 +1178,27 @@ void cb_My_Main_Loop_function(void)
 	//indicate SW Pressed
 	cb_User_SW_Function();
 	//Send adv packet
-	User_Test_ADV_Paekct_Send();
+	//User_Test_ADV_Paekct_Send();
 
 	//Control LED
-	User_Ctr_LED_Function();
+	//User_Ctr_LED_Function();
+
+/*
+	if(last_gen_onoff_cmd !=  gen_onoff_cmd)
+	{
+		gen_onoff_cmd_feedback = mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,(u8 *)&gen_onoff_cmd,1,0xFFFF, 0);
+		
+		if(gen_onoff_cmd_feedback != 0)
+		{
+            LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Failed: ", 0);
+		}
+		else
+		{
+            LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Success: ", 0);
+		}
+	}
+*/
+	
 
 }
 
