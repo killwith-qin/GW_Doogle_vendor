@@ -1179,6 +1179,64 @@ void cb_My_Main_Loop_function(void)
 	//Control LED
 	//User_Ctr_LED_Function();
 
+if(last_gen_onoff_cmd !=  gen_onoff_cmd)
+{
+
+    last_gen_onoff_cmd = gen_onoff_cmd;
+    user_beacon_send_ADV.cmd =0x0280;
+	user_beacon_send_ADV.feedback=NEED_FEEDBACK;
+	user_beacon_send_ADV.par[0] = gen_onoff_cmd;
+	user_beacon_send_ADV.len = 1;
+    LOG_USER_MSG_INFO(0, 0, "Send ADV CMD ", 0);
+	Need_Send_ADV_CMD =1;
+    Need_Send_Mesh_CMD =1;
+}
+
+if(Get_ADV_Message.feedback == NEED_FEEDBACK)
+{
+    user_beacon_send_ADV.feedback = ALREADY_GET_FEEDBACK;
+    Need_Send_ADV_CMD =1;
+    if(Need_Send_Mesh_CMD == 1)
+	{
+		gen_onoff_cmd_feedback = mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,(u8 *)&gen_onoff_cmd,1,0xFFFF, 0);
+		
+		if(gen_onoff_cmd_feedback != 0)
+		{
+            LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Failed: ", 0);
+		}
+		else
+		{
+            LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Success: ", 0);
+			Need_Send_Mesh_CMD = 0;
+		}
+	}
+	else
+	{
+        LOG_USER_MSG_INFO(0, 0, "No action ", 0);
+	}
+}
+else if(Get_ADV_Message.feedback == ALREADY_GET_FEEDBACK)
+{
+    Need_Send_ADV_CMD = 0;
+	Get_ADV_Message.feedback = FB_INIT_STATE;
+    LOG_USER_MSG_INFO(0, 0, "OP is Finish ", 0);
+}
+else
+{
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
 /*
 	if(last_gen_onoff_cmd !=  gen_onoff_cmd)
 	{

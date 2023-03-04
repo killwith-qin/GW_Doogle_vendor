@@ -34,8 +34,24 @@
   * @brief Common User Code.
   * @{
   */
+#define MAX_PAR_LEN 4
 
+typedef enum Feed_Back_enum
+{
+FB_INIT_STATE,
+NEED_FEEDBACK,
+ALREADY_GET_FEEDBACK,
+OTHER_ACTION,
+MAX_FEEDBACK_INDEX
+}Feed_back_status;
 
+typedef struct User_Beacon_tag
+{
+    u16 cmd;
+    u8 len;
+    u8 par[MAX_PAR_LEN];
+    Feed_back_status feedback;
+}User_Beacon_ST;
 
 
 
@@ -44,7 +60,11 @@ void cb_user_factory_reset_additional();
 void cb_user_proc_led_onoff_driver(int on);
 
 extern unsigned char Mesh_GW_MacID[6];
+extern u8 Need_Send_ADV_CMD;
+extern u8 Need_Send_Mesh_CMD;
 
+extern User_Beacon_ST user_beacon_send_ADV;
+extern User_Beacon_ST Get_ADV_Message;
 /**
   * @}
   */
