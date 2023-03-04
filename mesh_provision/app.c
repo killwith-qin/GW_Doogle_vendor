@@ -230,8 +230,8 @@ int app_event_handler (u32 h, u8 *p, int n)
 			{
 				if((pa->data[3] ==0x80) && (pa->data[4] == 0x02))
 				{
-				    memcmp((u8 *)&Get_ADV_Message,pa->data,11);
-				    LOG_USER_MSG_INFO((u8 *)pa->data, 11,"ADV mesaage: ",0);
+				    memcpy((u8 *)&Get_ADV_Message,pa->data,11);
+				    LOG_USER_MSG_INFO((u8 *)&Get_ADV_Message, 11,"ADV mesaage: ",0);
 				}
 			}
 			if(LL_TYPE_ADV_NONCONN_IND != (pa->event_type & 0x0F)){

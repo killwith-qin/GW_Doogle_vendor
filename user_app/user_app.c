@@ -74,7 +74,7 @@ void cb_user_proc_led_onoff_driver(int on)
     // TODO
 }
 
-unsigned char Mesh_GW_MacID[6] = {0x20,0x19,0x11,0x22,0xFF,0x11};
+unsigned char Mesh_GW_MacID[6] = {0x20,0x19,0x11,0x22,0xFF,0x12};
 
 u8 Need_Send_ADV_CMD =0;
 u8 Need_Send_Mesh_CMD = 0;
