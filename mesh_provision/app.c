@@ -228,7 +228,11 @@ int app_event_handler (u32 h, u8 *p, int n)
 			event_adv_report_t *pa = (event_adv_report_t *)p;
 			if(memcmp(pa->mac,Mesh_GW_MacID,5) == 0)
 			{
-				 LOG_USER_MSG_INFO((u8 *)pa->data, 20,"ADV mesaage: ",0);
+				if((pa->data[3] ==0x80) && (pa->data[4] == 0x02))
+				{
+				    memcmp((u8 *)&Get_ADV_Message,pa->data,11);
+				    LOG_USER_MSG_INFO((u8 *)pa->data, 11,"ADV mesaage: ",0);
+				}
 			}
 			if(LL_TYPE_ADV_NONCONN_IND != (pa->event_type & 0x0F)){
 				return 0;
@@ -1195,6 +1199,7 @@ if(last_gen_onoff_cmd !=  gen_onoff_cmd)
 if(Get_ADV_Message.feedback == NEED_FEEDBACK)
 {
     user_beacon_send_ADV.feedback = ALREADY_GET_FEEDBACK;
+	user_beacon_send_ADV.cmd =0x0280;
     Need_Send_ADV_CMD =1;
     if(Need_Send_Mesh_CMD == 1)
 	{
