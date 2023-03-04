@@ -1802,13 +1802,16 @@ int gatt_adv_prepare_handler(rf_packet_adv_t * p, int rand_flag)
 #endif
 
 #if(BEACON_ENABLE)
-    if(0 == ret){   // priority is lowest
-	
-        ret = user_pre_set_beacon_to_adv(p);
-		if(ret == 1)
-		{
-			LOG_USER_MSG_INFO(0, 0, "BEACON Send success!", 0);
-		}
+    if(0 == ret)
+	{   // priority is lowest
+	    if(Need_Send_ADV_CMD == 1)
+	    {
+                ret = user_pre_set_beacon_to_adv(p);
+		        if(ret == 1)
+		    {
+			    LOG_USER_MSG_INFO(0, 0, "BEACON Send success!", 0);
+		    }
+	    }
     }
 #endif
 

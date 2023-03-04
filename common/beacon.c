@@ -24,7 +24,7 @@
  *******************************************************************************************************/
 #include "proj/tl_common.h"
 #include "proj_lib/ble/ll/ll.h"
-
+#include "vendor/user_app/user_app.h"
 #if(BEACON_ENABLE)
 #if 0
 //apple ibeacon
@@ -135,7 +135,7 @@ int pre_set_beacon_to_adv(rf_packet_adv_t *p){
  	return 0;
 }
 
-
+//#define Send_debug  
 
 int user_pre_set_beacon_to_adv(rf_packet_adv_t *p){
 	static u32 user_last_time = 0;
@@ -143,13 +143,21 @@ int user_pre_set_beacon_to_adv(rf_packet_adv_t *p){
 	// send one beacon packet every BEACON_INTERVAL+random(10-20) ms 
 	if(clock_time_exceed(user_last_time, BEACON_INTERVAL*1000)){
 		user_last_time = clock_time()|1;
-			beacon_len = 30;
-			memcpy(p->data, ibeacon, beacon_len);
+	#ifdef Send_debug
+		beacon_len = 30;
+		memcpy(p->data, ibeacon, beacon_len);
 		p->dma_len = beacon_len + 8;
 		p->header.type = LL_TYPE_ADV_NONCONN_IND;//Set ADV type to non-connectable
 		p->rf_len = beacon_len + 6;
+		memcpy(p->advA, tbl_mac, 6);	
+	#else	
+		memcpy(p->data, (u8 *)&user_beacon_send_ADV, sizeof(user_beacon_send_ADV));
+		p->dma_len = sizeof(user_beacon_send_ADV) + 8;
+		p->header.type = LL_TYPE_ADV_NONCONN_IND;//Set ADV type to non-connectable
+		p->rf_len = sizeof(user_beacon_send_ADV) + 6;
 		memcpy(p->advA, tbl_mac, 6);
-		
+         
+	#endif
 		return 1;
  	}
  	

@@ -47,6 +47,7 @@ MAX_FEEDBACK_INDEX
 
 typedef struct User_Beacon_tag
 {
+    u8 Fixed_Format[3];
     u16 cmd;
     u8 len;
     u8 par[MAX_PAR_LEN];
