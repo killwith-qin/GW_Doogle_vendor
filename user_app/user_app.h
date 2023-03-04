@@ -26,7 +26,6 @@
 
 #include "proj/tl_common.h"
 #include "vendor/mesh_provision/app.h"
-
 /** @addtogroup user_app
   * @{
   */
@@ -44,7 +43,7 @@
 void cb_user_factory_reset_additional();
 void cb_user_proc_led_onoff_driver(int on);
 
-
+extern unsigned char Mesh_GW_MacID[6];
 
 /**
   * @}

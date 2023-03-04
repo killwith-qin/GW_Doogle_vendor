@@ -49,6 +49,7 @@
 #include "vendor/common/blt_soft_timer.h"
 #include "proj/drivers/rf_pa.h"
 #include "../common/remote_prov.h"
+#include "vendor/user_app/user_app.h"
 
 #if (HCI_ACCESS==HCI_USE_UART)
 #include "proj/drivers/uart.h"
@@ -210,11 +211,6 @@ _attribute_ram_code_ static void Send_Multiple_Ctr_Signal(u32 *Ctr_Signal, U32 l
 
 
 
-
-
-const unsigned char Mesh_GW_Mac[6] = {0x20,0x19,0x11,0x22,0xFF,0x11};
-
-
 //----------------------- handle BLE event ---------------------------------------------
 int app_event_handler (u32 h, u8 *p, int n)
 {
@@ -230,9 +226,9 @@ int app_event_handler (u32 h, u8 *p, int n)
 		if (subcode == HCI_SUB_EVT_LE_ADVERTISING_REPORT)	// ADV packet
 		{
 			event_adv_report_t *pa = (event_adv_report_t *)p;
-			if(memcmp(pa->mac,Mesh_GW_Mac,6) == 0) 
+			if(memcmp(pa->mac,Mesh_GW_MacID,5) == 0)
 			{
-				 LOG_USER_MSG_INFO((u8 *)pa, 20,"ADV mesaage: ",0);
+				 LOG_USER_MSG_INFO((u8 *)pa->data, 20,"ADV mesaage: ",0);
 			}
 			if(LL_TYPE_ADV_NONCONN_IND != (pa->event_type & 0x0F)){
 				return 0;

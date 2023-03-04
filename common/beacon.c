@@ -136,6 +136,28 @@ int pre_set_beacon_to_adv(rf_packet_adv_t *p){
 }
 
 
+
+int user_pre_set_beacon_to_adv(rf_packet_adv_t *p){
+	static u32 user_last_time = 0;
+	 
+	// send one beacon packet every BEACON_INTERVAL+random(10-20) ms 
+	if(clock_time_exceed(user_last_time, BEACON_INTERVAL*1000)){
+		user_last_time = clock_time()|1;
+			beacon_len = 30;
+			memcpy(p->data, ibeacon, beacon_len);
+		p->dma_len = beacon_len + 8;
+		p->header.type = LL_TYPE_ADV_NONCONN_IND;//Set ADV type to non-connectable
+		p->rf_len = beacon_len + 6;
+		memcpy(p->advA, tbl_mac, 6);
+		
+		return 1;
+ 	}
+ 	
+ 	return 0;
+}
+
+
+
 #endif
 
  

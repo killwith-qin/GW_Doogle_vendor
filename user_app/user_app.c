@@ -46,6 +46,7 @@
 #include "vendor/common/mesh_config.h"
 #include "vendor/common/directed_forwarding.h"
 #include "vendor/common/certify_base/certify_base_crypto.h"
+#include "vendor/user_app/user_app.h"
 
 #if(__TL_LIB_8258__ || (MCU_CORE_TYPE == MCU_CORE_8258))
 #include "stack/ble/ble.h"
@@ -72,20 +73,7 @@ void cb_user_proc_led_onoff_driver(int on)
 {
     // TODO
 }
-/*
-unsigned char Printf_Buf_QW[6] = {0x65,0x66,0x67,0x68,0x69,0x70};
-u32 QW_start_tick=0;
 
-u32 USER_MAIN_LOOP_COUNT=0;
+unsigned char Mesh_GW_MacID[6] = {0x20,0x19,0x11,0x22,0xFF,0x12};
 
-void cb_My_Main_Loop_function(void)
-{
 
-	if( clock_time_exceed(QW_start_tick, 200 * 1000))
-	{
-		QW_start_tick = clock_time();
-		USER_MAIN_LOOP_COUNT++;
-		LOG_USER_MSG_INFO(Printf_Buf_QW, 6, "For TEST:", 0);
-	}
-
-}*/

@@ -343,6 +343,7 @@ uint32_t soft_crc32_telink(const void *buf, size_t size, uint32_t crc);
 #endif
 void vendor_md_cb_pub_st_set2ali();
 int pre_set_beacon_to_adv(rf_packet_adv_t *p);
+int user_pre_set_beacon_to_adv(rf_packet_adv_t *p);
 u16 swap_u16_data(u16 swap);
 void mesh_seg_must_en(u8 en);
 int mesh_dev_key_candi_decrypt_cb( u16 src_adr,int dirty_flag ,const u8* ac_backup ,unsigned char *r_an, 

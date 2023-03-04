@@ -30,6 +30,7 @@
 #include "proj_lib/ble/blt_config.h"
 #include "proj_lib/ble/ll/ll.h"
 #include "vendor/common/mesh_common.h"
+#include "vendor/user_app/user_app.h"
 extern void user_init();
 extern void main_loop ();
 
@@ -97,7 +98,7 @@ int main (void) {
 	}
 }
 #elif((MCU_CORE_TYPE == MCU_CORE_8258) || (MCU_CORE_TYPE == MCU_CORE_8278))
-unsigned char Mesh_GW_MacID[6] = {0x20,0x19,0x11,0x22,0xFF,0x11};
+
 
 
 _attribute_ram_code_ int main (void)    //must run in ramcode
