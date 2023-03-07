@@ -78,7 +78,7 @@ unsigned char Mesh_GW_MacID[6] = {0x20,0x19,0x11,0x22,0xFF,0x12};
 
 u8 Need_Send_ADV_CMD =0;
 u8 Need_Send_Mesh_CMD = 0;
-
+GW_Role_enum GW_Role= {GW_INIT};
 User_Beacon_ST user_beacon_send_ADV=
 {
     {0x02, 0x01, 0x06},

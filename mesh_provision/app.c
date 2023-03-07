@@ -1164,11 +1164,119 @@ void User_Ctr_LED_Function(void)
 }
 
 
+#define CMD_ADV_SEND_MAX_TIME  (2000 * 1000)  //2S
+    u32 GW_Inter_Start_Tick = 0;
+
+void User_GW_ADV_Interactive_Active(void)
+{
+    // GW_ACTIVE
+    if(last_gen_onoff_cmd !=  gen_onoff_cmd)
+    {
+	    LOG_USER_MSG_INFO(0, 0, "Send ADV CMD ", 0);
+        last_gen_onoff_cmd = gen_onoff_cmd; //As event
+        //Set Send adv data
+        user_beacon_send_ADV.cmd =0x0280;
+	    user_beacon_send_ADV.feedback=NEED_FEEDBACK;
+	    user_beacon_send_ADV.par[0] = gen_onoff_cmd;
+	    user_beacon_send_ADV.len = 1;
+
+        //Send ADV flag
+	    Need_Send_ADV_CMD =1;
+	    // GW role
+	    GW_Role = GW_ACTIVE;
+	    //record inter time
+	    GW_Inter_Start_Tick = clock_time();
+	}
+// if  gen_onoff_cmd not change, ADV cmd only send MAX_TIME
+    if(Need_Send_ADV_CMD ==1 )
+    {
+        if( clock_time_exceed(GW_Inter_Start_Tick, CMD_ADV_SEND_MAX_TIME))
+		{
+            Need_Send_ADV_CMD = 0;
+			GW_Role = GW_INIT;
+		}
+    }
+
+    /*
+	if(Get_ADV_Message.feedback == ALREADY_GET_FEEDBACK)
+    {
+		Need_Send_ADV_CMD = 0;
+		GW_Role = GW_INIT;
+        user_beacon_send_ADV.cmd =0x0280;
+		LOG_USER_MSG_INFO(0, 0, "CMD is Finish ", 0);
+
+	}
+	*/
+
+}
+
+void User_GW_ADV_Interactive_Passive(void)
+{
+	static u8 Last_Passive_State = 0xFF;
+	int gen_onoff_cmd_feedback = 1;
+	u8 GW_Passive_Send_CMD = Get_ADV_Message.par[0];
+    
+    //GW_PASSIVE
+    if(Get_ADV_Message.feedback == NEED_FEEDBACK) //Get_ADV_Message can't change,even adv data not receive.
+    {
+	    //GW_PASSIVE send ADV data
+        user_beacon_send_ADV.feedback = ALREADY_GET_FEEDBACK;
+	    user_beacon_send_ADV.cmd =0x0280;
+		if(Last_Passive_State != GW_Passive_Send_CMD)
+		{
+            Need_Send_Mesh_CMD  = 1;
+			Need_Send_ADV_CMD =1;
+			GW_Inter_Start_Tick = clock_time();
+			LOG_USER_MSG_INFO(0, 0, "ADV CMD is Changed!", 0);
+		}
+		
+	    GW_Role = GW_PASSIVE;
+		
+        if(Need_Send_Mesh_CMD == 1)
+	    {
+		    gen_onoff_cmd_feedback = mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,(u8 *)&gen_onoff_cmd,1,0xFFFF, 0);
+		
+		    if(gen_onoff_cmd_feedback != 0)
+		    {
+                LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Failed: ", 0);
+		    }
+		    else
+		    {
+                LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Success: ", 0);
+				Last_Passive_State = GW_Passive_Send_CMD;
+				Get_ADV_Message.feedback = FB_INIT_STATE; //need active Change feedback, avoid entry this state.
+			    Need_Send_Mesh_CMD = 0;
+		    }
+	    }
+	    else
+	    {
+			Get_ADV_Message.feedback = FB_INIT_STATE; //need active Change feedback, avoid entry this state.
+            //LOG_USER_MSG_INFO(0, 0, "No action ", 0);
+	    }
+
+	}
+	if(Need_Send_ADV_CMD == 1)
+    {
+        if( clock_time_exceed(GW_Inter_Start_Tick, CMD_ADV_SEND_MAX_TIME) )
+	    {
+            Need_Send_Mesh_CMD = 0;
+            GW_Role = GW_INIT;
+		    Need_Send_Mesh_CMD = 0;
+	    }
+    }
+
+
+	
+}
+
+
+
 
 
 void cb_My_Main_Loop_function(void)
 {
-	int gen_onoff_cmd_feedback = 1;
+	
+	
 	//MAC,Dirve name.etc
 	cb_User_Init_info();
 	//GPIO,COMMS;
@@ -1183,63 +1291,33 @@ void cb_My_Main_Loop_function(void)
 	//Control LED
 	//User_Ctr_LED_Function();
 
-if(last_gen_onoff_cmd !=  gen_onoff_cmd)
-{
+    //GW ADV Interactive
+	if(GW_Role != GW_PASSIVE) {User_GW_ADV_Interactive_Active();}
 
-    last_gen_onoff_cmd = gen_onoff_cmd;
-    user_beacon_send_ADV.cmd =0x0280;
-	user_beacon_send_ADV.feedback=NEED_FEEDBACK;
-	user_beacon_send_ADV.par[0] = gen_onoff_cmd;
-	user_beacon_send_ADV.len = 1;
-    LOG_USER_MSG_INFO(0, 0, "Send ADV CMD ", 0);
-	Need_Send_ADV_CMD =1;
-    Need_Send_Mesh_CMD =1;
+    //GW ADV Interactive
+    if(GW_Role != GW_ACTIVE)  {User_GW_ADV_Interactive_Passive();}
 }
 
-if(Get_ADV_Message.feedback == NEED_FEEDBACK)
+/*
+if(Get_ADV_Message.feedback == ALREADY_GET_FEEDBACK)
 {
-    user_beacon_send_ADV.feedback = ALREADY_GET_FEEDBACK;
-	user_beacon_send_ADV.cmd =0x0280;
-    Need_Send_ADV_CMD =1;
-    if(Need_Send_Mesh_CMD == 1)
+
+	if(GW_Role == GW_ACTIVE)
 	{
-		gen_onoff_cmd_feedback = mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,(u8 *)&gen_onoff_cmd,1,0xFFFF, 0);
-		
-		if(gen_onoff_cmd_feedback != 0)
-		{
-            LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Failed: ", 0);
-		}
-		else
-		{
-            LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Success: ", 0);
-			Need_Send_Mesh_CMD = 0;
-		}
+		//help Passive entry ALREADY_GET_FEEDBACK status
+		user_beacon_send_ADV.feedback = ALREADY_GET_FEEDBACK;
+        user_beacon_send_ADV.cmd =0x0280;
+		LOG_USER_MSG_INFO(0, 0, "CMD is Finish ", 0);
+
 	}
-	else
+	if(GW_Role == GW_PASSIVE)
 	{
-        LOG_USER_MSG_INFO(0, 0, "No action ", 0);
+		Need_Send_Mesh_CMD = 0;
+		GW_Role = GW_INIT;
 	}
-}
-else if(Get_ADV_Message.feedback == ALREADY_GET_FEEDBACK)
-{
-    Need_Send_ADV_CMD = 0;
-	Get_ADV_Message.feedback = FB_INIT_STATE;
-    LOG_USER_MSG_INFO(0, 0, "OP is Finish ", 0);
-}
-else
-{
-
 
 }
-
-
-
-
-
-
-
-
-
+*/
 
 
 /*
@@ -1259,7 +1337,6 @@ else
 */
 	
 
-}
 
 
 

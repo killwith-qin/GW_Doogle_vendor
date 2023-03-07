@@ -54,7 +54,13 @@ typedef struct User_Beacon_tag
     Feed_back_status feedback;
 }User_Beacon_ST;
 
+typedef enum GW_Role_tag
+{
+ GW_INIT,
+ GW_ACTIVE,
+ GW_PASSIVE
 
+}GW_Role_enum;
 
 // --------- function  ----------------
 void cb_user_factory_reset_additional();
@@ -63,7 +69,7 @@ void cb_user_proc_led_onoff_driver(int on);
 extern unsigned char Mesh_GW_MacID[6];
 extern u8 Need_Send_ADV_CMD;
 extern u8 Need_Send_Mesh_CMD;
-
+extern GW_Role_enum GW_Role;
 extern User_Beacon_ST user_beacon_send_ADV;
 extern User_Beacon_ST Get_ADV_Message;
 /**

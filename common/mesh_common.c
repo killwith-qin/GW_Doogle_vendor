@@ -2495,7 +2495,8 @@ int mesh_tx_cmd(material_tx_cmd_t *p)
 		LOG_USER_MSG_INFO((u8 *)&(p->op), 2, "mesh tx reliable cmd is unreliable ", 0);
 		mesh_tx_cmd_feedback = mesh_tx_cmd_unreliable(p);
     }
-    if(mesh_tx_cmd_feedback == 0 && (cmd_op == 0x0282 ) )
+    
+	if(mesh_tx_cmd_feedback == 0 && (cmd_op == 0x0282 ) && (GW_Role != GW_PASSIVE) )
 	{
         op_prama = p->par;
 		last_gen_onoff_cmd = gen_onoff_cmd;
@@ -2516,7 +2517,7 @@ static inline int mesh_tx_cmd2normal_2(u16 op, u8 *par, u32 par_len, u16 adr_src
 
 	u8 immutable_flag = 0;
 	set_material_tx_cmd(&mat, op, par, par_len, adr_src, adr_dst, g_reliable_retry_cnt_def, rsp_max, 0, nk_array_idx, ak_array_idx, 0, immutable_flag, p_tx_head);
-	LOG_USER_MSG_INFO((u8 *)&immutable_flag, 1, "mesh_tx_cmd2normal_2", 0);
+	LOG_USER_MSG_INFO((u8 *)&immutable_flag, 1, "mesh_tx_cmd2normal_2: ", 0);
 	return mesh_tx_cmd(&mat);
 }
 
