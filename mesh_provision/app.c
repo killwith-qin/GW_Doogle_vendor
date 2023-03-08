@@ -978,7 +978,7 @@ typedef struct User_Para_for_OP{
 
 #define USER_ADV_PACKET_CYCLE_TIME  (4000 * 1000)  //2000MS
 
-#define USER_SEND_COMMAND_TEST    VD_GROUP_G_SET_NOACK//0xABCD
+#define USER_SEND_COMMAND_TEST    G_ONOFF_SET//VD_GROUP_G_SET_NOACK//0xABCD
 void User_Test_ADV_Paekct_Send(void)
 {
 	static u32 User_Adv_Pacekt_Start_Tick = 0;
@@ -1172,6 +1172,7 @@ void User_GW_ADV_Interactive_Active(void)
     // GW_ACTIVE
     if(last_gen_onoff_cmd !=  gen_onoff_cmd)
     {
+		//mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,&gen_onoff_cmd,1,0xFFFF, 0);
 	    LOG_USER_MSG_INFO(0, 0, "Send ADV CMD ", 0);
         last_gen_onoff_cmd = gen_onoff_cmd; //As event
         //Set Send adv data
@@ -1234,18 +1235,19 @@ void User_GW_ADV_Interactive_Passive(void)
 		
         if(Need_Send_Mesh_CMD == 1)
 	    {
-		    gen_onoff_cmd_feedback = mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,(u8 *)&gen_onoff_cmd,1,0xFFFF, 0);
+		    gen_onoff_cmd_feedback = mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,(u8 *)&GW_Passive_Send_CMD,1,0xFFFF, 0);
 		
 		    if(gen_onoff_cmd_feedback != 0)
 		    {
-                LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Failed: ", 0);
+                LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "GW_Passive Send CMD is is Failed: ", 0);
 		    }
 		    else
 		    {
-                LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "ADV Send State is Success: ", 0);
+                LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), " GW_Passive Send CMD is Success: ", 0);
 				Last_Passive_State = GW_Passive_Send_CMD;
 				Get_ADV_Message.feedback = FB_INIT_STATE; //need active Change feedback, avoid entry this state.
 			    Need_Send_Mesh_CMD = 0;
+				LOG_USER_MSG_INFO(0, 0, "CMD op is Changed!", 0);
 		    }
 	    }
 	    else
