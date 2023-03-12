@@ -1176,7 +1176,7 @@ void User_GW_ADV_Interactive_Active(void)
 	    LOG_USER_MSG_INFO(0, 0, "Send ADV CMD ", 0);
         last_gen_onoff_cmd = gen_onoff_cmd; //As event
         //Set Send adv data
-        user_beacon_send_ADV.cmd =0x0280;
+        user_beacon_send_ADV.cmd =USER_SEND_COMMAND_TEST;
 	    user_beacon_send_ADV.feedback=NEED_FEEDBACK;
 	    user_beacon_send_ADV.par[0] = gen_onoff_cmd;
 	    user_beacon_send_ADV.len = 1;
@@ -1222,7 +1222,7 @@ void User_GW_ADV_Interactive_Passive(void)
     {
 	    //GW_PASSIVE send ADV data
         user_beacon_send_ADV.feedback = ALREADY_GET_FEEDBACK;
-	    user_beacon_send_ADV.cmd =0x0280;
+	    user_beacon_send_ADV.cmd =USER_SEND_COMMAND_TEST;
 		if(Last_Passive_State != GW_Passive_Send_CMD)
 		{
             Need_Send_Mesh_CMD  = 1;
