@@ -228,7 +228,7 @@ int app_event_handler (u32 h, u8 *p, int n)
 			event_adv_report_t *pa = (event_adv_report_t *)p;
 			if(memcmp(pa->mac,Mesh_GW_MacID,5) == 0)
 			{
-				if((pa->data[3] ==0x80) && (pa->data[4] == 0x02))
+				if((pa->data[3] ==0x82) && (pa->data[4] == 0x02))
 				{
 				    memcpy((u8 *)&Get_ADV_Message,pa->data,11);
 				    LOG_USER_MSG_INFO((u8 *)&Get_ADV_Message, 11,"ADV mesaage: ",0);
@@ -1164,7 +1164,7 @@ void User_Ctr_LED_Function(void)
 }
 
 
-#define CMD_ADV_SEND_MAX_TIME  (2000 * 1000)  //2S
+#define CMD_ADV_SEND_MAX_TIME  (300 * 1000)  //300mS
     u32 GW_Inter_Start_Tick = 0;
 
 void User_GW_ADV_Interactive_Active(void)
