@@ -60,7 +60,7 @@
 #include "vendor/common/mi_api/telink_sdk_mible_api.h"
 #include "vendor/common/mi_api/telink_sdk_mesh_api.h"
 #endif
-
+#include "vendor/user_app/user_app.h"
 #if GATT_RP_EN
 #include "remote_prov_gatt.h"
 #endif
@@ -88,7 +88,7 @@
 #include "homekit_src/hk_adv_packet.h"
 #include "../mesh_gw_node_homekit/app.h"
 #endif
-int Printf_Count=0;
+
 #ifndef WIN32
 #if PM_DEEPSLEEP_RETENTION_ENABLE
 asm(".equ __PM_DEEPSLEEP_RETENTION_ENABLE,    1");
@@ -1804,14 +1804,15 @@ int gatt_adv_prepare_handler(rf_packet_adv_t * p, int rand_flag)
 #if(BEACON_ENABLE)
     if(0 == ret)
 	{   // priority is lowest
-	    if(Need_Send_ADV_CMD == 1)
+	    if(Need_Send_ADV_CMD != NO_USE_COMMAND)
 	    {
-                ret = user_pre_set_beacon_to_adv(p);
-		        if(ret == 1)
+            ret = user_pre_set_beacon_to_adv(p);
+		    if(ret == 1)
 		    {
-			    LOG_USER_MSG_INFO(0, 0, "BEACON Send success!", 0);
+				LOG_USER_MSG_INFO((u8*)&Need_Send_ADV_CMD, 2, "ADV SEND OK: ", 0);
 		    }
 	    }
+		 
     }
 #endif
 
@@ -2460,13 +2461,10 @@ void set_material_tx_cmd(material_tx_cmd_t *p_mat, u16 op, u8 *par, u32 par_len,
 	}
 }
 
-u8 gen_onoff_cmd = 0xFF;
-u8 last_gen_onoff_cmd = 0xFF;
 int mesh_tx_cmd(material_tx_cmd_t *p)
 {
 	int mesh_tx_cmd_feedback;
 	u16 cmd_op;
-	u8 *op_prama=NULL ;
 	cmd_op = p->op;
     
 	if(mesh_adr_check(p->adr_src, p->adr_dst))
@@ -2496,16 +2494,30 @@ int mesh_tx_cmd(material_tx_cmd_t *p)
 		mesh_tx_cmd_feedback = mesh_tx_cmd_unreliable(p);
     }
     
-	if(mesh_tx_cmd_feedback == 0 && (cmd_op == 0x0282 ) && (GW_Role != GW_PASSIVE) )
-	{
-        op_prama = p->par;
-		last_gen_onoff_cmd = gen_onoff_cmd;
-		gen_onoff_cmd = *op_prama;
-		LOG_USER_MSG_INFO(&gen_onoff_cmd, 1, "generic onoff cmd send: ", 0);
-	}
+
+	user_tx_cmd_info.cmd_op = p->op;
+    user_tx_cmd_info.par = p->par;
+	user_tx_cmd_info.par_len = p->par_len;
+
+switch(user_tx_cmd_info.cmd_op)
+{
+    case G_ONOFF_SET:
+		    last_gen_onoff_cmd = gen_onoff_cmd;
+		    gen_onoff_cmd = user_tx_cmd_info.par[0];
+		    LOG_USER_MSG_INFO(&gen_onoff_cmd, 1, "generic onoff cmd send: ", 0);
+		
+	break;
+
+    case 0xA001:
+
+    break;
+
+	default:
+
+	break;
 
 
-
+}
 	return mesh_tx_cmd_feedback;
 }
 
@@ -3633,7 +3645,6 @@ _PRINT_FUN_RAMCODE_ int LogMsgModule_io_simu(u8 *pbuf,int len,char *log_str,char
 {
 	char *p_buf;
 	char **pp_buf;
-	Printf_Count++;
 	p_buf = log_dst;
 	pp_buf = &(p_buf);
 	u32 head_len = print(pp_buf,log_str, 0)+print(pp_buf,format,list);   // log_dst[] is enough ram.
