@@ -1666,9 +1666,21 @@ int gatt_adv_prepare_handler(rf_packet_adv_t * p, int rand_flag)
 
     int ret = 0;
 
-    if(is_provision_working()){
+    provision_working_flag = is_provision_working();
+	
+	if(provision_working_flag != pre_provision_working_flag )
+    {
+		pre_provision_working_flag = provision_working_flag;
+	    LOG_USER_MSG_INFO((u8*)&provision_working_flag, 1, "provision Working?: ", 0);
+    }
+
+    if(provision_working_flag != 0)
+	{
         return 0;
     }
+
+    
+
     
     // dispatch gatt part 
 #if   (!__PROJECT_MESH_PRO__ || PROVISIONER_GATT_ADV_EN)
@@ -2482,6 +2494,7 @@ int mesh_tx_cmd(material_tx_cmd_t *p)
 			p->rsp_max = 1;
 		}
 		LOG_USER_MSG_INFO((u8 *)&(p->op), 2, "mesh tx reliable cmd is reliable ", 0);
+		
 		mesh_tx_cmd_feedback = mesh_tx_cmd_reliable(p);
         
     }else

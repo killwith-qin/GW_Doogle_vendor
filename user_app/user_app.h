@@ -38,11 +38,11 @@
 
 typedef enum Feed_Back_enum
 {
-FB_INIT_STATE,
-NEED_FEEDBACK,
-ALREADY_GET_FEEDBACK,
-OTHER_ACTION,
-MAX_FEEDBACK_INDEX
+	FB_INIT_STATE,
+	NEED_FEEDBACK,
+	ALREADY_GET_FEEDBACK,
+	OTHER_ACTION,
+	MAX_FEEDBACK_INDEX
 }Feed_back_status;
 
 typedef enum GW_CONNECT_TAG
@@ -118,7 +118,8 @@ extern const User_Beacon_ST Init_ADV_Message;
 extern GW_CONNECT_STATE GW_Connect_State_Var;
 extern u8 gen_onoff_cmd;
 extern u8 last_gen_onoff_cmd;
-
+extern u8 pre_provision_working_flag;
+extern u8 provision_working_flag;
 
 #define REQUEST_AS_PASSIVE_CMD (0xA001)
 #define NO_USE_COMMAND              (0x0000)

@@ -75,7 +75,8 @@ void cb_user_proc_led_onoff_driver(int on)
 }
 
 unsigned char Mesh_GW_MacID[6] = {0x20,0x19,0x11,0x22,0xFF,0x12};
-
+u8 pre_provision_working_flag = 0xFF;
+u8 provision_working_flag = 0xFF;
 u16 Need_Send_ADV_CMD = NO_USE_COMMAND;
 u8 Need_Send_Mesh_CMD = 0;
 GW_Role_enum GW_Role= {GW_INIT};
@@ -724,21 +725,27 @@ void User_GW_PASSIVE_Process(void)
     
     if(Get_ADV_Message.feedback == NEED_FEEDBACK && (Get_ADV_Message.cmd = USER_SEND_COMMAND_TEST)) //Get_ADV_Message can't change,even adv data not receive.
     {
-	    //GW_PASSIVE send ADV data
+	    //GW_PASSIVE don't need to send ADV data
         user_beacon_send_ADV.feedback = ALREADY_GET_FEEDBACK;
 	    user_beacon_send_ADV.cmd =USER_SEND_COMMAND_TEST;
 		if(Last_Passive_State != GW_Passive_Send_CMD)
 		{
-            Need_Send_Mesh_CMD  = 1;
-			Need_Send_ADV_CMD = USER_SEND_COMMAND_TEST;
+            Need_Send_Mesh_CMD  = 1;			
 			GW_Inter_Start_Tick = clock_time();
 			LOG_USER_MSG_INFO(0, 0, "ADV CMD is Changed!", 0);
 		}
 		
         if(Need_Send_Mesh_CMD == 1)
 	    {
-		    gen_onoff_cmd_feedback = mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,(u8 *)&GW_Passive_Send_CMD,1,0xFFFF, 0);
-		
+		    //gen_onoff_cmd_feedback = mesh_tx_cmd2normal_primary(USER_SEND_COMMAND_TEST,(u8 *)&GW_Passive_Send_CMD,1,0xFFFF, 0);
+			if(GW_Passive_Send_CMD != 0)
+			{
+		        gen_onoff_cmd_feedback = access_cmd_onoff(0xffff, 0, G_ON, CMD_NO_ACK, 0);
+			}
+			else
+			{
+                gen_onoff_cmd_feedback = access_cmd_onoff(0xffff, 0, G_OFF, CMD_NO_ACK, 0);
+			}
 		    if(gen_onoff_cmd_feedback != 0)
 		    {
                 LOG_USER_MSG_INFO((u8 *)&gen_onoff_cmd_feedback, sizeof(gen_onoff_cmd_feedback), "GW_Passive Send CMD is is Failed: ", 0);
@@ -759,15 +766,6 @@ void User_GW_PASSIVE_Process(void)
 	    }
 
 	}
-
-	if(Need_Send_ADV_CMD == USER_SEND_COMMAND_TEST)
-    {
-        if( clock_time_exceed(GW_Inter_Start_Tick, CMD_ADV_SEND_MAX_TIME) )
-	    {
-            Need_Send_ADV_CMD = NO_USE_COMMAND;
-		    Need_Send_Mesh_CMD = 0; 
-	    }
-    }
 }
 
 
