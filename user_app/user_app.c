@@ -808,6 +808,32 @@ void User_GW_INIT_Process(void)
 
 }
 
+#define USER_PARK_LOCK_CYCLE_TIME  (1000 * 1000)  //1S
+
+User_OP_Para par;
+
+void cb_Parking_Lock_Function(void)
+{
+    static u32 User_Park_Lock_Start_Tick = 0;
+
+	int Send_Success_Flag = 0;
+	 
+	if( clock_time_exceed(User_Park_Lock_Start_Tick, USER_PARK_LOCK_CYCLE_TIME))
+	{
+		User_Park_Lock_Start_Tick = clock_time();
+		if(par.Value != 1)
+		{
+		    par.Value = 1;
+		}
+		else
+		{
+			par.Value = 0;
+		}
+        Send_Success_Flag = mesh_tx_cmd2normal_primary(PARK_LOCK_SET_NOACK,(u8 *)&par,sizeof(User_OP_Para),0xFFFF, 0);
+		LOG_USER_MSG_INFO((u8 *)&Send_Success_Flag, sizeof(Send_Success_Flag), "Parking Lock Info send", 0);
+    }
+}
+
 void cb_My_Main_Loop_function(void)
 {
 	
@@ -833,6 +859,11 @@ void cb_My_Main_Loop_function(void)
 	if(GW_Role == GW_PASSIVE) {User_GW_PASSIVE_Process();}
     //GW ACTIVE
     if(GW_Role == GW_ACTIVE)  {User_GW_ACTIVE_Process();}
+
+
+	//Parking Lock function
+
+	//cb_Parking_Lock_Function();
 
 }
 
