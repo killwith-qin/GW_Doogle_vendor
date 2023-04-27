@@ -129,6 +129,8 @@ user_tx_cmd_info_store user_tx_cmd_info ={
 u8 gen_onoff_cmd = 0xFF;
 u8 last_gen_onoff_cmd = 0xFF;
 
+u32 PARK_CMD_SEND_TIME = 0;
+u32 PARK_CMD_RECEIVE_TIME = 0;
 
 
 /*Qin Wei function*/
@@ -830,6 +832,12 @@ void cb_Parking_Lock_Function(void)
 			par.Value = 0;
 		}
         Send_Success_Flag = mesh_tx_cmd2normal_primary(PARK_LOCK_SET_NOACK,(u8 *)&par,sizeof(User_OP_Para),0xFFFF, 0);
+        if(Send_Success_Flag == 0)
+		{
+        	PARK_CMD_SEND_TIME = clock_time();
+		    LOG_USER_MSG_INFO((u8*)&PARK_CMD_SEND_TIME, 4, "Send time is: ", 0);
+		}
+
 		LOG_USER_MSG_INFO((u8 *)&Send_Success_Flag, sizeof(Send_Success_Flag), "Parking Lock Info send", 0);
     }
 }
@@ -863,7 +871,7 @@ void cb_My_Main_Loop_function(void)
 
 	//Parking Lock function
 
-	//cb_Parking_Lock_Function();
+	cb_Parking_Lock_Function();
 
 }
 

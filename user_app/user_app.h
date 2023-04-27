@@ -121,10 +121,15 @@ extern u8 last_gen_onoff_cmd;
 extern u8 pre_provision_working_flag;
 extern u8 provision_working_flag;
 
+extern u32 PARK_CMD_SEND_TIME;
+extern u32 PARK_CMD_RECEIVE_TIME;
+
 #define REQUEST_AS_PASSIVE_CMD (0xA001)
 #define NO_USE_COMMAND              (0x0000)
 #define USER_SEND_COMMAND_TEST    G_ONOFF_SET//VD_GROUP_G_SET_NOACK//0xABCD
 #define GW_INIT_IDLE_CMD (0xA000)
+
+
 
 void cb_My_Main_Loop_function(void);
 /**

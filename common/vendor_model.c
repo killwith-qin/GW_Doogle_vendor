@@ -503,6 +503,22 @@ int cb_vd_group_g_status(u8 *par, int par_len, mesh_cb_fun_par_t *cb_par)
     return err;
 }
 
+int cb_vd_park_lock_status(u8 *par, int par_len, mesh_cb_fun_par_t *cb_par)
+{
+   int pub_v = 0;
+   u32 time_inv = 0;
+  PARK_CMD_RECEIVE_TIME = clock_time();
+
+  time_inv = (u32)(PARK_CMD_RECEIVE_TIME - PARK_CMD_SEND_TIME);
+
+ LOG_USER_MSG_INFO((u8*)&PARK_CMD_RECEIVE_TIME, 4, "Receive time is: ", 0);
+ LOG_USER_MSG_INFO((u8*)&time_inv, 4, "INV time is: ", 0);
+
+ return pub_v;
+}
+
+
+
 int cb_vd_msg_attr_status(u8 *par, int par_len, mesh_cb_fun_par_t *cb_par)
 {
     int err = 0;
@@ -936,6 +952,7 @@ mesh_cmd_sig_func_t mesh_cmd_vd_func[] = {
     #endif
 //Qinwei
     CMD_NO_STR(PARK_LOCK_SET_NOACK, 0, VENDOR_MD_LIGHT_C, VENDOR_MD_LIGHT_S, 0, STATUS_NONE),
+	CMD_NO_STR(PARK_LOCK_STATUS, 1, VENDOR_MD_LIGHT_S, VENDOR_MD_LIGHT_C,  cb_vd_park_lock_status, STATUS_NONE),
 
     #if (FAST_PROVISION_ENABLE)
 	CMD_NO_STR(VD_MESH_RESET_NETWORK, 0, VENDOR_MD_LIGHT_C, VENDOR_MD_LIGHT_S, cb_vd_mesh_reset_network, STATUS_NONE),
